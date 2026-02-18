@@ -9,6 +9,8 @@ db_path = os.path.join(os.path.dirname(__file__), '..', 'Database')
 if db_path not in sys.path:
     sys.path.append(db_path)
 
+sessions = []
+
 # Пробуем импортировать модуль
 try:
     from database_handling import init_database, create_session, get_all_sessions
@@ -71,8 +73,10 @@ def countdown(remaining: int) -> None:
         text = session_name_label.get()
         # Сохраняем сессию в БД
         try:
-            create_session(text, beg_remaining)
+            sessions.append(create_session(text, beg_remaining))
             print("✅ Сессия создана в БД")
+            print(sessions)
+            create_session_list()
 
             view_all_sessions()
         except Exception as e:
@@ -90,9 +94,11 @@ window['bg'] = '#FEFAE0'
 
 radio_var = IntVar()
 beg_remaining = 0
+frame1 = Frame(window, bg='#FEFAE0')
+frame1.place(x=400, y=70)
 
 
-center_hello = Label(window, text='EidosProductivity', bg='#FEFAE0', font=('Arial', 20, BOLD))
+center_hello = Label(frame1, text='EidosProductivity', bg='#FEFAE0', font=('Arial', 20, BOLD))
 center_hello.pack(pady=20)
 
 # Радиокнопки времени
@@ -100,9 +106,10 @@ rb0 = Radiobutton(window, text='Нулевой вариант | 1 минута',
 rb1 = Radiobutton(window, text='Первый вариант | 5 минут', variable=radio_var, value=5, **label_style)
 rb2 = Radiobutton(window, text='Второй вариант | 15 минут', variable=radio_var, value=15, **label_style)
 rb3 = Radiobutton(window, text='Третий вариант | 30 минут', variable=radio_var, value=30, **label_style)
-buttons = [rb0, rb1, rb2, rb3]
-for btn in buttons:
-    btn.pack(pady=2)
+rb0.place(x=30, y=155)
+rb1.place(x=30, y=205)
+rb2.place(x=30, y=255)
+rb3.place(x=30, y=305)
 
 #gpt нагенеренный
 session_name_label = Entry(
@@ -119,9 +126,10 @@ session_name_label = Entry(
 )
 session_name_label.pack(pady=10)
 
+window.title('EidosProductivity')
 
 # Старт бтн
-start_btn = Button(window, text="▶ Начать сессию",
+start_btn = Button(frame1, text="▶ Начать сессию",
                    command=start_session,
                    bg='#4CAF50', fg='white',
                    font=('Arial', 11, 'bold'),
@@ -129,11 +137,11 @@ start_btn = Button(window, text="▶ Начать сессию",
 start_btn.pack(pady=20)
 
 
-timer_label = Label(window, text="00:00", **label_style)
+timer_label = Label(frame1, text="00:00", **label_style)
 timer_label.pack(pady=10)
 
 # Логи
-check_logs = Button(window, text="Показать все сессии",
+check_logs = Button(frame1, text="Показать все сессии",
                    command=view_all_sessions,
                    bg='#2196F3', fg='white',
                    font=('Arial', 10))
@@ -142,5 +150,15 @@ check_logs.pack(pady=10)
 # Метка статуса
 status_label = Label(window, text='', bg='#FEFAE0', font=('Arial', 10))
 status_label.pack(pady=10)
+
+labelText = Label(window, text='Пройденные сессии')
+counter_sessions = 0
+
+def create_session_list():
+    for session in sessions:
+        label = Label(text=session)
+        label.pack(pady=10)
+
+window.title('EidosProductivity')
 
 window.mainloop()
