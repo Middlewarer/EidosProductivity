@@ -45,7 +45,38 @@ def create_user(status, name, username, password):
     conn.close()
 
 
-def create_session(title: str, time_in_mins: int) -> None:
+def identify_user(username: str, password: str):
+    """
+    Идентифицирует пользователя по логину и паролю
+    Возвращает ID пользователя или None если не найден
+    """
+    conn = None
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Выполняем запрос
+        cursor.execute('''SELECT id FROM user WHERE username = ? AND password = ?''',
+                       (username, password))
+
+        # Получаем результат
+        result = cursor.fetchone()
+
+        # Если пользователь найден, возвращаем ID
+        if result:
+            return result[0]  # возвращаем ID
+        else:
+            return None  # пользователь не найден
+
+    except Exception as e:
+        print(f"Ошибка при идентификации пользователя: {e}")
+        return None
+    finally:
+        # Важно закрывать соединение
+        if conn:
+            conn.close()
+
+def create_session(title: str, time_in_mins: int) -> str:
     conn = get_connection()
     cursor = conn.cursor()
     created_at = datetime.now()
@@ -54,6 +85,8 @@ def create_session(title: str, time_in_mins: int) -> None:
     conn.commit()
     conn.close()
     print(f"✅ Сессия создана: {title}, {time_in_mins} мин")
+    return f'{title} | {time_in_mins} мин'
+
 
 
 def get_all_sessions():
